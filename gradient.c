@@ -83,12 +83,12 @@ HSV parseHSV(char * arg) {
   return ret;
 }
 
-int checkArgument(const char * arg, short * rgbInput, short * rgbOutput) {
-  if(!strcmp(arg, "--rgbIN"))
-    *rgbInput = 1;
-  else if(!strcmp(arg, "--rgbOUT"))
+int checkArgument(const char * arg, short * rgbOutput, short * nonprintable) {
+  if(!strcmp(arg, "--rgb"))
     *rgbOutput = 1;
-  else if(strcmp(arg, "--hsvOUT") && strcmp(arg, "--hsvIN"))
+  else if(!strcmp(arg, "-n")) {
+    *nonprintable = 1;
+  } else if(strcmp(arg, "--hsv"))
     return 1;
   return 0;
 }
@@ -101,6 +101,7 @@ void getLengths(char * text, size_t * lenWithoutSpaces, size_t * lenWithSpaces) 
     spaces++;
   }
   *lenWithSpaces = *lenWithoutSpaces + spaces - 1;
+  free(buffer);
 }
 
 float nth(float val1, float val2, size_t len, int i) {
@@ -109,53 +110,69 @@ float nth(float val1, float val2, size_t len, int i) {
 }
 
 void printColoredText(char * text,
-                 short rgbInput,
                  short rgbOutput,
-                 void * color1,
-                 void * color2) {
+                 short nonprintable,
+                 HSV * color1,
+                 HSV * color2) {
   size_t lenWithoutSpaces = 0, lenWithSpaces = 0;
   getLengths(text, &lenWithoutSpaces, &lenWithSpaces);
-  HSV col1 = *(HSV*)color1;
-  HSV col2 = *(HSV*)color2;
+  const char * nonprintabbleFront = "";
+  const char * nonprintabbleBack = "";
+  if(nonprintable) {
+    nonprintabbleFront = "\\[";
+    nonprintabbleBack = "\\]";
+  }
   for (size_t i = 0; i < lenWithSpaces; i++){
     if(text[i]==' ') {
       putchar(' ');
       continue;
     }
-    HSV toConvert;
-    toConvert.h = nth(col1.h, col2.h, lenWithoutSpaces, i);
-    toConvert.s = nth(col1.s, col2.s, lenWithoutSpaces, i);
-    toConvert.v = nth(col1.v, col2.v, lenWithoutSpaces, i);
-    RGB toPrint = hsv2rgb(&toConvert);
-    printf("\033[38;2;%d;%d;%dm%c", toPrint.r, toPrint.g, toPrint.b, text[i]);
+    RGB toPrint;
+    if(rgbOutput) {
+      RGB col1 = hsv2rgb(color1);
+      RGB col2 = hsv2rgb(color2);
+      toPrint.r = nth(col1.r, col2.r, lenWithoutSpaces, i);
+      toPrint.g = nth(col1.g, col2.g, lenWithoutSpaces, i);
+      toPrint.b = nth(col1.b, col2.b, lenWithoutSpaces, i);
+    } else {
+      HSV toConvert;
+      toConvert.h = nth(color1->h, color2->h, lenWithoutSpaces, i);
+      toConvert.s = nth(color1->s, color2->s, lenWithoutSpaces, i);
+      toConvert.v = nth(color1->v, color2->v, lenWithoutSpaces, i);
+      toPrint = hsv2rgb(&toConvert);
+    }
+    printf("%s\033[38;2;%d;%d;%dm%s%c", nonprintabbleFront, 
+    toPrint.r, toPrint.g, toPrint.b, nonprintabbleBack, text[i]);
   }
-  putchar('\n');
+  if(!nonprintable)
+    printf("\033[0m\n");
+  else
+    printf("\\[\033[0m\\]");
 }
 
 int main(int argc, char ** argv) {
   int firstColIndex = 1, secondColIndex = 2, textIndex = 3;
-  short valid = 0, rgbInput = 0, rgbOutput = 0;
-  if(argc == 6) {
-    firstColIndex = 3, secondColIndex = 4, textIndex = 5, valid = 1;
-    if(checkArgument(argv[1], &rgbInput, &rgbOutput) ||
-       checkArgument(argv[2], &rgbInput, &rgbOutput)) {
-      printf("Invalid argument");
-      return 1;
-    }
-  } else if(argc == 5) {
-    firstColIndex = 2, secondColIndex = 3, textIndex = 4, valid = 1;
-    if(checkArgument(argv[1], &rgbInput, &rgbOutput)) {
-      printf("Invalid argument");
-      return 1;
+  short valid = 0, rgbOutput = 0, nonprintable = 0;
+
+  if(argc >= 5 && argc <= 7) {
+    firstColIndex = argc - 3;
+    secondColIndex = argc - 2; 
+    textIndex = argc - 1; 
+    valid = 1;
+    for (size_t i = 1; i <= argc - 4; i++) {
+      if(checkArgument(argv[i], &rgbOutput, &nonprintable)) {
+        printf("Invalid argument");
+        return 1;
+      }
     }
   }
   if(argc == 4 || valid) {
     HSV color1 = parseHSV(argv[firstColIndex]);
     HSV color2 = parseHSV(argv[secondColIndex]);
-    printColoredText(argv[textIndex], rgbInput, rgbOutput, (void*)&color1, (void*)&color2);
+    printColoredText(argv[textIndex], rgbOutput, nonprintable, &color1, &color2);
   } else {
     printf("Use following format:\n\t"
-           "[--hsvIN/--rgbIN] [--hsvOUT/--hsvOUT] \"H,S,V\" \"H,S,V\" \"text to be colored\"");
+           "[-n] [--hsv/--rgb] \"H,S,V\" \"H,S,V\" \"text to be colored\"");
   }
   return 0;
 }

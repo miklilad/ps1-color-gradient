@@ -1,7 +1,5 @@
 
 
-args="100,100,100" "160,100,100" ${PWD}
-
 all: run
 
 compile: gradient.c
@@ -11,7 +9,11 @@ debug_compile: gradient.c
 	gcc -g -pedantic -Wall gradient.c -o gradient.out -lm
 	
 run: compile
-	./gradient.out ${args}
+	./gradient.out "0,100,100" "120,100,100" ${PWD}
+	./gradient.out "120,100,100" "240,100,100" ${PWD}
+	./gradient.out "240,100,100" "360,100,100" ${PWD}
+	./gradient.out "0,100,100" "360,100,100" ${PWD}
 	
 debug: debug_compile
-	gdb -tui --args ./gradient.out ${args} 
+	gdb -tui --args ./gradient.out ${PWD} 
+
