@@ -172,7 +172,7 @@ int main(int argc, char ** argv) {
     printColoredText(argv[textIndex], rgbOutput, nonprintable, &color1, &color2);
   } else {
     printf("Use following format:\n\t"
-           "[-n] [--hsv/--rgb] \"H,S,V\" \"H,S,V\" \"text to be colored\"");
+           "[-n] [--hsv/--rgb] \"H,S,V\" \"H,S,V\" \"text to be colored\"\n");
   }
   return 0;
 }
