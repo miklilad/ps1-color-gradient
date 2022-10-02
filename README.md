@@ -6,6 +6,8 @@ My main goal was to use it with PS1 to get a colorful looking prompt.
 
 ![Use with PS1](https://github.com/miklilad/sh-text-color-gradient/blob/master/img/1.png)
 
+![Use with PS1](https://github.com/miklilad/sh-text-color-gradient/blob/master/img/2.png)
+
 ## Instalation
 
 #### Prerequisites - make, gcc
@@ -32,7 +34,7 @@ Before the required arguments you can insert 2 optional ones: **\[-n] \[--hsv/--
 
 ## How to use with PS1
 
-Place the compiled `gradient.out` and `.bash_prompt` file into your home directory and add the following code snippet into your `.bashrc` in the place where the PS1 is being set. 
+Place the compiled `.gradient.out` and `.bash_prompt` file into your home directory and add the following code snippet into your `.bashrc` in the place where the PS1 is being set. 
 <h5 a><strong><code>.bashrc</code></strong></h5>
 
 ```sh
@@ -42,8 +44,8 @@ else
 ```
 
 If you don't have `make` or `gcc`, there's a binary in `precompiled.zip` file.
-You can adjust the colors of your prompt by changing the values of `gradient.out` arguments in `.bash_prompt`
+You can adjust the colors of your prompt by changing the values of `.gradient.out` arguments in `.bash_prompt`
 
 ## Examples
 
-![Examples](https://github.com/miklilad/sh-text-color-gradient/blob/master/img/2.png)
+![Examples](https://github.com/miklilad/sh-text-color-gradient/blob/master/img/3.png)
